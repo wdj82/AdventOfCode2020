@@ -3,14 +3,14 @@ import input from './input.js';
 const inputArray = input.split('\n').map(Number);
 
 function firstAnswer() {
+    const comp = new Map();
+
     for (let i = 0; i < inputArray.length; i++) {
         const num1 = inputArray[i];
-        for (let j = i + 1; j < inputArray.length; j++) {
-            const num2 = inputArray[j];
-            if (num1 + num2 === 2020) {
-                return num1 * num2;
-            }
+        if (comp.has(num1)) {
+            return comp.get(num1) * num1;
         }
+        comp.set(2020 - num1, num1);
     }
 }
 
