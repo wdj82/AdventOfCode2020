@@ -15,14 +15,27 @@ function firstAnswer() {
 }
 
 function secondAnswer() {
-    for (let i = 0; i < inputArray.length; i++) {
-        const num1 = inputArray[i];
-        for (let j = i + 1; j < inputArray.length; j++) {
-            const num2 = inputArray[j];
-            for (let k = j + 1; k < inputArray.length; k++) {
-                const num3 = inputArray[k];
-                if (num1 + num2 + num3 === 2020) {
-                    return num1 * num2 * num3;
+    const arr = [...inputArray].sort((a, b) => a - b);
+
+    for (let i = 0; i <= arr.length - 3; i++) {
+        if (i === 0 || arr[i] > arr[i - 1]) {
+            let start = i + 1;
+            let end = arr.length - 1;
+
+            while (start < end) {
+                if (arr[i] + arr[start] + arr[end] === 2020) {
+                    return arr[i] * arr[start] * arr[end];
+                }
+                if (arr[i] + arr[start] + arr[end] < 2020) {
+                    const currentStart = start;
+                    while (arr[start] === arr[currentStart] && start < end) {
+                        start++;
+                    }
+                } else {
+                    const currentEnd = end;
+                    while (arr[end] === arr[currentEnd] && start < end) {
+                        end--;
+                    }
                 }
             }
         }
