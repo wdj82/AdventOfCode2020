@@ -19,16 +19,11 @@ function countQuestions(group, flag) {
         return Object.keys(uniqueAnswers).length;
     }
 
-    //for part two only return answers that everyone answered yes to
+    //for part two only return answers where everyone answered yes
     if (flag === 'all') {
-        let total = 0;
-        Object.values(uniqueAnswers).forEach((answerCount) => {
-            //if the question was answered by everyone in this group increment total
-            if (answerCount === groupArray.length) {
-                total += 1;
-            }
-        });
-        return total;
+        const answerCounts = Object.values(uniqueAnswers);
+        //add all answer counts equal to the number of people in the group and return
+        return answerCounts.reduce((total, answerCount) => (answerCount === groupArray.length ? (total += 1) : total), 0);
     }
 
     //impossible but what the hell
