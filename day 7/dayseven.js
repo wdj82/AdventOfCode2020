@@ -30,7 +30,8 @@ function createBagObjects(bags) {
 }
 
 //recursively search the bag object for every bag that can hold a shiny gold bag
-function findBagsThatCanHoldGoldBag(bags, savedBags = {}) {
+const savedBags = {};
+function findBagsThatCanHoldGoldBag(bags) {
     let total = 0;
     Object.entries(bags).forEach(([outterBag, containedBags]) => {
         if (typeof containedBags !== 'object' || outterBag === 'shiny gold') {
