@@ -26,17 +26,17 @@ function findCombinations(adapters) {
     uniqueAdapters.add(max);
 
     //calculate the possible combinations up to the max joltage
-    const saved = {};
+    const combinations = {};
     //initial is always 1 jolt
-    saved[0] = 1;
+    combinations[0] = 1;
     for (let i = 1; i <= max; i++) {
-        //if this joltage is in the list add it's possible combinations based on the three previous joltages combinations
+        //if this joltage is in the list set it's possible combinations based on the three previous joltages combinations
         if (uniqueAdapters.has(i)) {
-            saved[i] = (saved[i - 1] || 0) + (saved[i - 2] || 0) + (saved[i - 3] || 0);
+            combinations[i] = (combinations[i - 1] || 0) + (combinations[i - 2] || 0) + (combinations[i - 3] || 0);
         }
     }
     //the final value is the total number of combinations for this max joltage
-    return saved[max];
+    return combinations[max];
 }
 
 console.log('1-jolt differences multiplied by 3-jolt differences is: ', chainAdapters(adapters));
