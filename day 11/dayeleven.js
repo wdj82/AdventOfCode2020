@@ -2,146 +2,71 @@ import input from './input.js';
 
 //convert the input into an array of arrays
 const layout = input.split('\n').map((row) => row.split(''));
+//for checking all eight directions of the layout
+const searchDirections = [
+    { x: 0, y: -1 },
+    { x: 0, y: 1 },
+    { x: -1, y: 0 },
+    { x: 1, y: 0 },
+    { x: -1, y: 1 },
+    { x: 1, y: 1 },
+    { x: 1, y: -1 },
+    { x: -1, y: -1 },
+];
 
-//check the target seat is within the layout bounds
-const checkBounds = (height, width) => {
-    return (row, column) => row >= 0 && row < height && column >= 0 && column < width;
+//outer function saves the layout
+const checkAdjacentSeats = (height, width, layout) => {
+    //if seat is within bounds and is filled return 1
+    return (row, column) => {
+        if (row >= 0 && row < height && column >= 0 && column < width) {
+            if (layout[row][column] === '#') {
+                return 1;
+            }
+        }
+        return 0;
+    };
 };
 
-//return how many directly adjacent seats are occupied
+//part 1 rules - return how many directly adjacent seats are occupied
 function numDirectlyAdjacent(row, column, layout) {
     let count = 0;
-    const isInBounds = checkBounds(layout.length, layout[0].length);
+    const getAdjacentFilledSeat = checkAdjacentSeats(layout.length, layout[0].length, layout);
 
-    if (isInBounds(row, column - 1) && layout[row][column - 1] === '#') {
-        count += 1;
-    }
-    if (isInBounds(row, column + 1) && layout[row][column + 1] === '#') {
-        count += 1;
-    }
-    if (isInBounds(row - 1, column) && layout[row - 1][column] === '#') {
-        count += 1;
-    }
-    if (isInBounds(row + 1, column) && layout[row + 1][column] === '#') {
-        count += 1;
-    }
-    if (isInBounds(row - 1, column + 1) && layout[row - 1][column + 1] === '#') {
-        count += 1;
-    }
-    if (isInBounds(row + 1, column + 1) && layout[row + 1][column + 1] === '#') {
-        count += 1;
-    }
-    if (isInBounds(row + 1, column - 1) && layout[row + 1][column - 1] === '#') {
-        count += 1;
-    }
-    if (isInBounds(row - 1, column - 1) && layout[row - 1][column - 1] === '#') {
-        count += 1;
-    }
+    //check each of the eight directions for a filled seat
+    searchDirections.forEach((dir) => {
+        count += getAdjacentFilledSeat(row + dir.y, column + dir.x);
+    });
+
     return count;
 }
 
-//look at the first seat in each direction and count the occupied ones
-function numFirstSeen(row, column, layout) {
+const checkForSeats = (height, width, layout) => {
+    //search in the direction provided for a filled seat
+    return (row, column, yDir, xDir) => {
+        while (row >= 0 && row < height && column >= 0 && column < width) {
+            if (layout[row][column] !== '.') {
+                if (layout[row][column] === '#') {
+                    return 1;
+                }
+                break;
+            }
+            row += yDir;
+            column += xDir;
+        }
+        //didn't find a filled seat
+        return 0;
+    };
+};
+
+//part 2 rules - look at the first seat in each direction and count the occupied ones
+function numSeenFilledSeats(row, column, layout) {
     let count = 0;
-    const height = layout.length;
-    const width = layout[0].length;
-    let i, j;
+    const getFilledSeat = checkForSeats(layout.length, layout[0].length, layout);
 
-    //look to the right
-    for (i = column + 1; i < width; i++) {
-        if (layout[row][i] !== '.') {
-            if (layout[row][i] === '#') {
-                count += 1;
-            }
-            break;
-        }
-    }
-
-    //look to the left
-    for (i = column - 1; i >= 0; i--) {
-        if (layout[row][i] !== '.') {
-            if (layout[row][i] === '#') {
-                count += 1;
-            }
-            break;
-        }
-    }
-
-    //look down
-    for (i = row + 1; i < height; i++) {
-        if (layout[i][column] !== '.') {
-            if (layout[i][column] === '#') {
-                count += 1;
-            }
-            break;
-        }
-    }
-
-    //look up
-    for (i = row - 1; i >= 0; i--) {
-        if (layout[i][column] !== '.') {
-            if (layout[i][column] === '#') {
-                count += 1;
-            }
-            break;
-        }
-    }
-
-    //look upper right
-    i = row - 1;
-    j = column + 1;
-    while (i >= 0 && j < width) {
-        if (layout[i][j] !== '.') {
-            if (layout[i][j] === '#') {
-                count += 1;
-            }
-            break;
-        }
-        i -= 1;
-        j += 1;
-    }
-
-    //look lower right
-    i = row + 1;
-    j = column + 1;
-    while (i < height && j < width) {
-        if (layout[i][j] !== '.') {
-            if (layout[i][j] === '#') {
-                count += 1;
-            }
-            break;
-        }
-        i += 1;
-        j += 1;
-    }
-
-    //look upper left
-    i = row - 1;
-    j = column - 1;
-    while (i >= 0 && j >= 0) {
-        if (layout[i][j] !== '.') {
-            if (layout[i][j] === '#') {
-                count += 1;
-            }
-            break;
-        }
-        i -= 1;
-        j -= 1;
-    }
-
-    //look lower left
-    i = row + 1;
-    j = column - 1;
-    while (i < height && j >= 0) {
-        if (layout[i][j] !== '.') {
-            if (layout[i][j] === '#') {
-                count += 1;
-            }
-            break;
-        }
-        i += 1;
-        j -= 1;
-    }
+    //check each of the eight directions for a filled seat
+    searchDirections.forEach((dir) => {
+        count += getFilledSeat(row + dir.y, column + dir.x, dir.y, dir.x);
+    });
 
     return count;
 }
@@ -163,19 +88,19 @@ function simulateRules(layout, tooManyOccupied = 4, partOne = true) {
                 if (position === '.') continue;
 
                 //fill or empty the seats based on the rules
-                let numOccupiedAdjacent;
+                let filledSeats;
                 if (partOne) {
                     //part one rules
-                    numOccupiedAdjacent = numDirectlyAdjacent(row, column, layout);
+                    filledSeats = numDirectlyAdjacent(row, column, layout);
                 } else {
                     //part two rules
-                    numOccupiedAdjacent = numFirstSeen(row, column, layout);
+                    filledSeats = numSeenFilledSeats(row, column, layout);
                 }
-                if (position === 'L' && numOccupiedAdjacent === 0) {
+                if (position === 'L' && filledSeats === 0) {
                     newLayout[row][column] = '#';
                     didChange = true;
                     numOccupiedSeats += 1;
-                } else if (position === '#' && numOccupiedAdjacent >= tooManyOccupied) {
+                } else if (position === '#' && filledSeats >= tooManyOccupied) {
                     newLayout[row][column] = 'L';
                     didChange = true;
                     numOccupiedSeats -= 1;
