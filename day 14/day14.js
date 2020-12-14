@@ -1,15 +1,10 @@
 import input from './input.js';
 
-// const input = `mask = 000000000000000000000000000000X1001X
-// mem[42] = 100
-// mask = 00000000000000000000000000000000X0XX
-// mem[26] = 1`;
-
 //part one - apply the mask to the binary value
 function applyMask(mask, value) {
     let maskIndex = mask.length - 1;
     let valueIndex = value.length - 1;
-    let result = [];
+    const result = [];
     while (maskIndex >= 0) {
         if (mask[maskIndex] !== 'X') {
             result.push(mask[maskIndex]);
@@ -23,11 +18,11 @@ function applyMask(mask, value) {
     return parseInt(result.reverse().join(''), 2);
 }
 
-//part two - apply the mask with floating bits
+//part two - apply the mask with floating bits to the address
 function applyMaskWithFloating(mask, address) {
     let maskIndex = mask.length - 1;
     let valueIndex = address.length - 1;
-    let result = [];
+    const result = [];
     while (maskIndex >= 0) {
         if (mask[maskIndex] === '0') {
             result.push(address[valueIndex] || 0);
@@ -42,7 +37,38 @@ function applyMaskWithFloating(mask, address) {
     return result.reverse().join('');
 }
 
-function getAddresses(floatingAddress) {}
+//get all possible address generated from the floating bits
+function getAddresses(floatingAddress) {
+    const addressArray = [];
+    const numFloats = floatingAddress.match(/X/g).length;
+    const floatCombinations = [];
+
+    //for n number of floating bits the number of combinations is 2^n
+    //create a bit string for each combination (eg: two floats = [00, 01, 10, 11])
+    for (let i = 0; i < Math.pow(2, numFloats); i++) {
+        floatCombinations.push(i.toString(2).padStart(numFloats, '0'));
+    }
+
+    //for each combination create a new address
+    for (let i = 0; i < floatCombinations.length; i++) {
+        let index = 0;
+        let address = '';
+        //swap the X's with the combination's bits
+        for (let j = 0; j < floatingAddress.length; j++) {
+            const char = floatingAddress[j];
+            if (char === 'X') {
+                address += floatCombinations[i][index];
+                index += 1;
+            } else {
+                address += char;
+            }
+        }
+        addressArray.push(parseInt(address, 2));
+    }
+
+    //return the decimal address array
+    return addressArray;
+}
 
 //return sum of all values in memory after running the input commands
 function sumValues(input, partOne = true) {
@@ -66,8 +92,10 @@ function sumValues(input, partOne = true) {
                 commands[address] = applyMask(mask, Number(value).toString(2));
             } else {
                 //part two
+                //set all possible floating addresses to the value
                 const floatingAddress = applyMaskWithFloating(mask, Number(address).toString(2));
-                console.log(floatingAddress);
+                const addressArray = getAddresses(floatingAddress);
+                addressArray.forEach((address) => (commands[address] = Number(value)));
             }
         }
     });
