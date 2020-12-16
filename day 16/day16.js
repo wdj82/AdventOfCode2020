@@ -41,31 +41,30 @@ const nearbyTickets = partThree
     .split('\n')
     .map((inner) => inner.split(',').map(Number));
 
-function getInvalidTotal(ticket) {
-    return ticket.reduce((errorTotal, value) => {
-        const isValid = Object.values(fields).reduce((pass, ranges) => {
-            //if passed before one of the ranges is valid so skip
-            if (pass) return true;
+function isValidValue(ticketValue) {
+    return Object.values(fields).reduce((pass, ranges) => {
+        //if passed before one of the ranges is valid so skip
+        if (pass) return true;
 
-            //check both ranges
-            if (value >= ranges.firstRange.start && value <= ranges.firstRange.end) {
-                return true;
-            }
-            if (value >= ranges.secondRange.start && value <= ranges.secondRange.end) {
-                return true;
-            }
-            //failed both ranges
-            return false;
-        }, false);
-
-        //if invalid add the fields value to the total
-        return isValid ? errorTotal : (errorTotal += value);
-    }, 0);
+        //check both ranges
+        if (ticketValue >= ranges.firstRange.start && ticketValue <= ranges.firstRange.end) {
+            return true;
+        }
+        if (ticketValue >= ranges.secondRange.start && ticketValue <= ranges.secondRange.end) {
+            return true;
+        }
+        //failed both ranges
+        return false;
+    }, false);
 }
 
-//check all the ticket values against the field ranges
+//add up all invalid values of each ticket
 function findScanningErrorRate(tickets) {
-    return tickets.reduce((acc, ticket) => (acc += getInvalidTotal(ticket)), 0);
+    return tickets.reduce((total, ticket) => {
+        return (total += ticket.reduce((errorTotal, value) => {
+            return isValidValue(value) ? errorTotal : (errorTotal += value);
+        }, 0));
+    }, 0);
 }
 
 console.log('The ticket scanning error rate is: ', findScanningErrorRate(nearbyTickets));
