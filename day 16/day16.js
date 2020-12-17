@@ -29,28 +29,31 @@ const nearbyTickets = partThree
     .split('\n')
     .map((inner) => inner.split(',').map(Number));
 
+//check if in both ranges for field
+function isInRange(field, value) {
+    if (
+        (value >= field.firstRange.start && value <= field.firstRange.end) ||
+        (value >= field.secondRange.start && value <= field.secondRange.end)
+    ) {
+        return true;
+    }
+    return false;
+}
+
 //check if this is a valid ticket value according to the field ranges
-function isValidValue(ticketValue) {
+function isValueValid(ticketValue) {
     return Object.values(fields).reduce((pass, field) => {
         //if passed before one of the ranges is valid so skip
         if (pass) return true;
 
-        //check both ranges
-        if (ticketValue >= field.firstRange.start && ticketValue <= field.firstRange.end) {
-            return true;
-        }
-        if (ticketValue >= field.secondRange.start && ticketValue <= field.secondRange.end) {
-            return true;
-        }
-        //failed both ranges
-        return false;
+        return isInRange(field, ticketValue);
     }, false);
 }
 
 //check if the ticket is valid
 function isValidTicket(ticket) {
     for (let i = 0; i < ticket.length; i++) {
-        if (!isValidValue(ticket[i])) {
+        if (!isValueValid(ticket[i])) {
             return false;
         }
     }
@@ -61,7 +64,7 @@ function isValidTicket(ticket) {
 function findScanningErrorRate() {
     return nearbyTickets.reduce((total, ticket) => {
         return (total += ticket.reduce((errorTotal, value) => {
-            return isValidValue(value) ? errorTotal : (errorTotal += value);
+            return isValueValid(value) ? errorTotal : (errorTotal += value);
         }, 0));
     }, 0);
 }
@@ -71,28 +74,26 @@ function getCorrectFields() {
     const validTickets = nearbyTickets.filter((ticket) => isValidTicket(ticket));
     const fieldNames = Object.keys(fields);
     const possiblities = Array.from({ length: fieldNames.length }, Object);
-    const knownMatches = {};
+    const correctFields = {};
     const knownNames = {};
 
-    while (Object.values(knownMatches).length !== fieldNames.length) {
+    while (Object.values(correctFields).length !== fieldNames.length) {
         //go through each value of the ticket
         validTickets.forEach((ticket, ticketIndex) => {
             ticket.forEach((value, valueIndex) => {
                 //get all names that fit the rules for this value
-                let possibleNames = fieldNames.filter((name) => {
+                let possibleNames = fieldNames.map((name) => {
                     //skip if the name or value is known
-                    if (knownMatches[valueIndex] || knownNames[name]) {
+                    if (correctFields[valueIndex] || knownNames[name]) {
                         return;
                     }
-                    if (
-                        (value >= fields[name].firstRange.start && value <= fields[name].firstRange.end) ||
-                        (value >= fields[name].secondRange.start && value <= fields[name].secondRange.end)
-                    ) {
+                    //if value matches the ranges for this name add it
+                    if (isInRange(fields[name], value)) {
                         return name;
                     }
                 });
 
-                //intersect the names with saved names for this value
+                //intersect the names with any saved names for this value's index
                 if (possiblities[valueIndex].length > 1) {
                     possibleNames = possiblities[valueIndex].filter((name) => possibleNames.includes(name));
                 }
@@ -100,7 +101,7 @@ function getCorrectFields() {
                 //if only one name left we have an answer
                 if (possibleNames.length === 1) {
                     const name = possibleNames[0];
-                    knownMatches[valueIndex] = name;
+                    correctFields[valueIndex] = name;
                     knownNames[name] = true;
                 } else {
                     //otherwise store the names for future checks
@@ -109,7 +110,7 @@ function getCorrectFields() {
             });
         });
     }
-    return knownMatches;
+    return correctFields;
 }
 
 //part two - return product of all values that match fields with departure in the name
