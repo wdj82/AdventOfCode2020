@@ -1,18 +1,12 @@
 import input from './input.js';
 
-// const input = `1 + 2 * 3 + 4 * 5 + 6
-// 1 + (2 * 3) + (4 * (5 + 6))
-// 2 * 3 + (4 * 5)
-// 5 + (8 * 3 + 9 + 3 * 4 * 3)
-// 5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))
-// ((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2`;
-
 const expressions = input.split('\n');
 
-function parse(expression) {
+//part one parse
+function parseSimple(expression) {
     while (expression.match(/\(/)) {
         //parse what's inside  the parens (removing the parens)
-        expression = expression.replace(/\([^()]+\)/, (match) => parse(match.slice(1, match.length - 1)));
+        expression = expression.replace(/\([^()]+\)/, (match) => parseSimple(match.slice(1, match.length - 1)));
     }
 
     //compute until expression is just a number
@@ -21,9 +15,32 @@ function parse(expression) {
             op == '+' ? Number(a) + Number(b) : Number(a) * Number(b),
         );
     }
+
     return Number(expression);
 }
 
-const total = expressions.reduce((total, expression) => (total += parse(expression)), 0);
+//part two parse
+function parseAdvanced(expression) {
+    while (expression.match(/\(/)) {
+        //parse what's inside  the parens (removing the parens)
+        expression = expression.replace(/\([^()]+\)/, (match) => parseAdvanced(match.slice(1, match.length - 1)));
+    }
 
-console.log(total);
+    //addition first
+    while (expression.match(/\+/)) {
+        expression = expression.replace(/(\d+) \+ (\d+)/, (_, a, b) => Number(a) + Number(b));
+    }
+
+    //multiplication second
+    while (expression.match(/\*/)) {
+        expression = expression.replace(/(\d+) \* (\d+)/, (_, a, b) => Number(a) * Number(b));
+    }
+
+    return Number(expression);
+}
+
+const simpleTotal = expressions.reduce((total, expression) => (total += parseSimple(expression)), 0);
+console.log('The sum of expressions using simple math is: ', simpleTotal);
+
+const advancedTotal = expressions.reduce((total, expression) => (total += parseAdvanced(expression)), 0);
+console.log('The sum of expressions using advanced math is: ', advancedTotal);
